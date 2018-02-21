@@ -3,6 +3,7 @@ const session = require('express-session');
 const passport = require('passport');
 
 const strategy = require(`${__dirname}/strategy`);
+const {clientID} = require('../config');
 
 const request = require('request');
 
@@ -27,7 +28,7 @@ passport.deserializeUser((user,done) =>{
 });
 
 app.get('/login', passport.authenticate('auth0', {
-  successRedirect: '/follwers',
+  successRedirect: 'http://localhost:3000/followers',
   failureRedirect: '/login',
   failureFlash: true,
   connection: 'github'
@@ -36,13 +37,14 @@ app.get('/login', passport.authenticate('auth0', {
 app.get('/followers', (req, res, next) =>{
   if (req.user) {
     const FollowersRequest = {
-      url: req.user.followers,
+      url: `https://api.github.com/users/${req.user.nickname}/followers`,
       headers: {
-        'User-Agent': req.user.clientID
+        'User-Agent': clientID
       }
     };
     request(FollowersRequest, (error, response, body)=>{
       res.status(200).send(body);
+      console.log(body)
     });
   }else {
       res.redirect('/login');
